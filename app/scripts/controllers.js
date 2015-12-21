@@ -1,3 +1,3 @@
-app.controller('mainController', function($scope) {
-    $scope.message = 'OH NO!';  
-});
+myApp.controller('GreetingController', ['$scope', function($scope) {
+  $scope.greeting = 'Hola!';
+}]);

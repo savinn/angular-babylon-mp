@@ -1,11 +1,7 @@
-var app = angular.module('myApp', []);
+var myApp = angular.module('myApp',[]);
 
-app.controller('mainController', function($scope) {
-    $scope.message = 'OH NO!';  
-});
+  myApp.controller('mainController', ['$scope', function($scope) {
+  $scope.greeting = 'Hola!';
+}]);
 
-//app configs
-app.constant('appsettings', {
-  'apiurl' : 'http://localhost:3000/',
-  'apptitle' : ''
-});
+
