@@ -1,3 +1,3 @@
-myApp.controller('GreetingController', ['$scope', function($scope) {
+myApp.controller('mainController', ['$scope', function($scope) {
   $scope.greeting = 'Hola!';
 }]);
