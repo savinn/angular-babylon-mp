@@ -26,6 +26,7 @@
       <script src="/bower_components/angular/angular.js"></script>
       <script src="/bower_components/babylonjs/dist/babylon.2.2.js"></script>
        <script src="/bower_components/babylonjs/src/bones/babylon.skeleton.js"></script>
+       <script src="/bower_components/babylonjs/loaders/OBJ/babylon.objFileLoader.js"></script>
     <!-- build:js scripts/vendor/modernizr.js -->
    
     <!-- endbuild -->
@@ -38,7 +39,7 @@
     <![endif]-->
 
     
-  <aside class="sidebar-left">
+  <!--<aside class="sidebar-left">
 
     <a class="company-logo" href="#">MP</a>
 
@@ -50,7 +51,7 @@
      
     </div>
 
-  </aside>
+  </aside> -->
 
 
 
@@ -73,119 +74,120 @@
 <canvas id="renderCanvas"></canvas>
 
     <script>
-      if (BABYLON.Engine.isSupported()) {
-            var canvas = document.getElementById("renderCanvas");
-            var engine = new BABYLON.Engine(canvas, true);
- 
-            BABYLON.SceneLoader.Load("", "textures/lady.babylon", engine, function (scene) {
- 
-                scene.executeWhenReady(function () {
-                    
-                     
 
 
+      document.addEventListener("DOMContentLoaded", run, false);
 
+function run() {
+    if (BABYLON.Engine.isSupported()) {
 
+        BABYLON.Engine.ShadersRepository = "/Babylon/Shaders/";
 
-        
-        
-            // Setup environment
-            var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(10, 10, 50), scene);
-            var light2 = new BABYLON.PointLight("Omni", new BABYLON.Vector3(10, 10, -20), scene);
-            var camera = new BABYLON.AnaglyphFreeCamera("af_cam", new BABYLON.Vector3(0, 1, -15), 0.5, scene);
-     
-
-            // Spheres
-            var sphere1 = BABYLON.Mesh.CreateSphere("Sphere1", 16.0, 10.0, scene);
-            var sphere2 = BABYLON.Mesh.CreateSphere("Sphere2", 16.0, 10.0, scene);
-            var sphere3 = BABYLON.Mesh.CreateSphere("Sphere3", 16.0, 10.0, scene);
-        
-            sphere1.position.x = -20;
-            sphere2.position.x = 0;
-            sphere3.position.x = 20;
-        
-            camera.radius = 400; // how far from the object to follow
-            camera.heightOffset = 0.1; // how high above the object to place the camera
-            camera.rotationOffset = 360; // the viewing angle
-            camera.cameraAcceleration = 0.05 // how fast to move
-            camera.maxCameraSpeed = 20
-
-
-            // Video plane
-            var videoPlane = BABYLON.Mesh.CreatePlane("Screen", 900,scene);
-            videoPlane.position.y = 100;
-            videoPlane.position.z = 400;
-        
-            // Mirror
-            var plane = BABYLON.Mesh.CreatePlane("plan", 900,scene);
-            plane.position.y = -100;
-            plane.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
-        
-
-           
-
-            // MATERIALS
-            var bumpMaterial = new BABYLON.StandardMaterial("texture1", scene);
-            bumpMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1);//Blue
-            bumpMaterial.bumpTexture = new BABYLON.Texture("textures/normalMap.jpg", scene);
-        
-            var simpleMaterial = new BABYLON.StandardMaterial("texture2", scene);
-            simpleMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);//Red
-        
-            var textMat = new BABYLON.StandardMaterial("texture3", scene);
-            textMat.diffuseTexture = new BABYLON.Texture("textures/normalMap.jpg", scene);
-        
-            //Creation of a mirror material
-            var mirrorMaterial = new BABYLON.StandardMaterial("texture4", scene);
-            mirrorMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
-            mirrorMaterial.reflectionTexture = new BABYLON.MirrorTexture("mirror", 512, scene, true); //Create a mirror texture
-            mirrorMaterial.reflectionTexture.mirrorPlane = new BABYLON.Plane(0, -1.0, 0, -10.0);
-            mirrorMaterial.reflectionTexture.renderList = [sphere1, sphere2, sphere3, videoPlane];
-            mirrorMaterial.reflectionTexture.level = 0.6;//Select the level (0.0 > 1.0) of the reflection
-        
-            // Multimaterial
-            var multimat = new BABYLON.MultiMaterial("multi", scene);
-            multimat.subMaterials.push(simpleMaterial);
-            multimat.subMaterials.push(bumpMaterial);
-            multimat.subMaterials.push(textMat);
-        
-            
-        
-            // Video material
-            var videoMat = new BABYLON.StandardMaterial("textVid", scene);
-            videoMat.diffuseTexture = new BABYLON.VideoTexture("video", ["textures/clip.mp4"], scene, false);
-            videoMat.backFaceCulling = false;
-        
-            //Applying materials
-            sphere1.material = bumpMaterial;
-            sphere2.material = multimat;
-            sphere3.material = simpleMaterial;
-            plane.material = mirrorMaterial;
-            videoPlane.material = videoMat;
-
-//lady
-
- 
-    
-    
-        //end lady
-
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, false);
 
         // Resize
         window.addEventListener("resize", function () {
             engine.resize();
         });
 
+        // Scene, light and camera
+        var scene = new BABYLON.Scene(engine);
+        var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(10, 10, 50), scene);
+        var light2 = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(10, 10, -20), scene);
+       
+        var camera = new BABYLON.FreeCamera("FreeCamera", new BABYLON.Vector3(0, 1, -6), scene);
+        camera.speed = 0.1;
+        camera.attachControl(canvas, true);
+        
 
 
- 
-                    // Once the scene is loaded, just register a render loop to render it
-                    engine.runRenderLoop(function() {
-                        scene.render();
-                    });
-                });
-            });
+        //Ground
+        var ground = BABYLON.Mesh.CreatePlane("ground", 20.0, scene);
+        ground.material = new BABYLON.StandardMaterial("groundMat", scene);
+        ground.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+        ground.material.backFaceCulling = false;
+        ground.position = new BABYLON.Vector3(0, 0, 0);
+        ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
+
+       
+//Creation of a mirror material
+            var mirrorMaterial = new BABYLON.StandardMaterial("texture4", scene);
+            mirrorMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            mirrorMaterial.reflectionTexture = new BABYLON.MirrorTexture("mirror", 512, scene, true); //Create a mirror texture
+            mirrorMaterial.reflectionTexture.mirrorPlane = new BABYLON.Plane(0, -1.0, 0, -10.0);
+            mirrorMaterial.reflectionTexture.renderList = [ground,videoPlane];
+            mirrorMaterial.reflectionTexture.level = 0.6;//Select the level (0.0 > 1.0) of the reflection
+            
+             // Video plane
+            var videoPlane = BABYLON.Mesh.CreatePlane("Screen", 6,scene);
+            videoPlane.position.y = 2;
+            videoPlane.position.z = 2;
+
+
+           // Video material
+            var videoMat = new BABYLON.StandardMaterial("textVid", scene);
+            videoMat.diffuseTexture = new BABYLON.VideoTexture("video", ["textures/clip.mp4"], scene, false);
+            videoMat.backFaceCulling = false;
+        
+
+         
+        //Applying materials
+            
+            videoPlane.material = videoMat;
+            ground.material=mirrorMaterial;
+
+        // Assets manager
+        var assetsManager = new BABYLON.AssetsManager(scene);
+
+        var meshTask = assetsManager.addMeshTask("her", "", "textures/", "lady.babylon");
+                  
+
+        // You can handle success and error on a per-task basis (onSuccess, onError)
+        meshTask.onSuccess = function (task) {
+            task.loadedMeshes[0].position = new BABYLON.Vector3(0.2, 0.3, 0);
         }
+
+        // But you can also do it on the assets manager itself (onTaskSuccess, onTaskError)
+        assetsManager.onTaskError = function (task) {
+            console.log("error while loading " + task.name);
+        }
+
+        
+
+        assetsManager.onFinish = function (tasks) {
+            engine.runRenderLoop(function () {
+                scene.render();
+            });
+        };
+
+ //Set gravity for the scene (G force like, on Y-axis)
+    scene.gravity = new BABYLON.Vector3(0, 0, 0);
+
+    // Enable Collisions
+    scene.collisionsEnabled = true;
+
+    //Then apply collisions and gravity to the active camera
+    camera.checkCollisions = true;
+    camera.applyGravity = true;
+
+    //Set the ellipsoid around the camera (e.g. your player's size)
+    camera.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.5);
+
+    //finally, say which mesh will be collisionable
+    ground.checkCollisions = true;
+    meshTask.checkCollisions = true;
+    videoPlane.checkCollisions = true;
+    
+
+        // Can now change loading background color:
+        engine.loadingUIBackgroundColor = "Black";
+
+        // Just call load to initiate the loading sequence
+        assetsManager.load();
+    }
+
+};
     </script>
 
 
